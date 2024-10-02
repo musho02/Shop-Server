@@ -26,6 +26,14 @@ const upload = multer({
   }
 });
 
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'https://shop-react-jbg3.onrender.com', // เปลี่ยนเป็นโดเมนของ frontend
+  methods: ['GET', 'POST'], // หรือระบุวิธีที่คุณใช้
+  credentials: true // หากจำเป็น
+}));
+
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     return res.status(400).json({ message: err.message });
