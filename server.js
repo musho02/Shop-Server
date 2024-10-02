@@ -9,6 +9,12 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+app.use(cors({
+  origin: 'https://shop-react-jbg3.onrender.com', // เปลี่ยนเป็นโดเมนของ frontend
+  methods: 'GET,POST', // หรือระบุวิธีที่คุณใช้
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,12 +30,6 @@ const upload = multer({
     cb(new Error('Error: File upload only supports the following filetypes - ' + fileTypes));
   }
 });
-
-app.use(cors({
-  origin: '*', // เปลี่ยนเป็นโดเมนของ frontend
-  methods: 'GET,POST', // หรือระบุวิธีที่คุณใช้
-  credentials: true // หากจำเป็น
-}));
 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -70,6 +70,7 @@ app.post('/register', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://shop-react-jbg3.onrender.com');
   const { username, password } = req.body;
 
   db.query('SELECT * FROM users WHERE username = $1', [username], (err, results) => {
