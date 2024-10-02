@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2');
+const { Client } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -35,18 +35,30 @@ app.use((err, req, res, next) => {
   next();
 });
 
-const db = mysql.createConnection(process.env.DATABASE_URL);
+const db = new Client({
+  host: 'dpg-crsmt168ii6s73ef22dg-a.singapore-postgres.render.com', // Host ของ Render
+  user: 'root', // Username ของคุณ
+  password: '15sdaU7JqCQyw5JrkBAwb4QxfVGExwEY', // รหัสผ่าน
+  database: 'shop_backend', // ชื่อฐานข้อมูล
+  port: 5432, // พอร์ต
+  ssl: {
+    rejectUnauthorized: false // ต้องเปิด SSL สำหรับการเชื่อมต่อกับ Render
+  }
+});
 
 db.connect((err) => {
-  if (err) throw err;
-  console.log('MySQL Connected');
+  if (err) {
+    console.error('Connection error', err.stack);
+  } else {
+    console.log('Connected to PostgreSQL!');
+  }
 });
 
 app.post('/register', (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  db.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword], (err, result) => {
+  db.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword], (err, result) => {
     if (err) return res.status(500).send(err);
     res.status(201).json({ message: 'User registered' });
   });
@@ -55,7 +67,7 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  db.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
+  db.query('SELECT * FROM users WHERE username = $1', [username], (err, results) => {
     if (err) return res.status(500).send(err);
     if (results.length === 0) return res.status(404).json({ message: 'User not found' });
 
@@ -90,7 +102,7 @@ app.post('/products', upload.single('prod_image'), isAdmin, (req, res) => {
   }
 
   db.query(
-    'INSERT INTO products (prod_name, prod_desc, prod_price, prod_ctgr, prod_image) VALUES (?, ?, ?, ?, ?)',
+    'INSERT INTO products (prod_name, prod_desc, prod_price, prod_ctgr, prod_image) VALUES ($1, $2, $3, $4, $5)',
     [prod_name, prod_desc, prod_price, prod_ctgr, prod_image],
     (err, result) => {
       if (err) {
