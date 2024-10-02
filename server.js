@@ -9,7 +9,6 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -47,9 +46,6 @@ const db = new Client({
   password: '15sdaU7JqCQyw5JrkBAwb4QxfVGExwEY', // รหัสผ่าน
   database: 'shop_backend', // ชื่อฐานข้อมูล
   port: 5432, // พอร์ต
-  ssl: {
-    rejectUnauthorized: false // ต้องเปิด SSL สำหรับการเชื่อมต่อกับ Render
-  }
 });
 
 db.connect((err) => {
@@ -124,10 +120,15 @@ app.get('/GetProduct', (req, res) => {
   db.query('SELECT id, prod_name, prod_price, prod_image FROM products', (err, results) => {
     if (err) return res.status(500).send(err);
 
-    const products = results.map(product => ({
-      ...product,
-      prod_image: product.prod_image.toString('base64') // Convert BLOB to base64
-    }));
+    if (Array.isArray(results)) {
+      const products = results.map(product => ({
+        ...product,
+        prod_image: product.prod_image.toString('base64') // Convert BLOB to base64
+      }));
+    } else {
+      console.error('Expected results to be an array, but got:', results);
+    }
+
 
     res.json(products);
   });
