@@ -9,12 +9,8 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-app.use(cors({
-  origin: 'https://shop-react-jbg3.onrender.com', // เปลี่ยนเป็นโดเมนของ frontend
-  methods: 'GET,POST', // หรือระบุวิธีที่คุณใช้
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
 
+app.use(cors());
 app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
