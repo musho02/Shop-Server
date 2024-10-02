@@ -46,7 +46,10 @@ const db = new Client({
   user: 'root', // Username ของคุณ
   password: '15sdaU7JqCQyw5JrkBAwb4QxfVGExwEY', // รหัสผ่าน
   database: 'shop_backend', // ชื่อฐานข้อมูล
-  port: 5432, // พอร์ต
+  port: 5432,
+  ssl: {
+    rejectUnauthorized: false // ตั้งค่าเพื่ออนุญาตการเชื่อมต่อแม้จะมีการรับรอง SSL ไม่ถูกต้อง
+  }
 });
 
 db.connect((err) => {
