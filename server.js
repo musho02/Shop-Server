@@ -10,7 +10,11 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://shop-react-jbg3.onrender.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -25,13 +29,6 @@ const upload = multer({
     }
     cb(new Error('Error: File upload only supports the following filetypes - ' + fileTypes));
   }
-});
-
-router.get('/', function (req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // If needed
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
 });
 
 app.use((err, req, res, next) => {
@@ -128,7 +125,7 @@ app.get('/GetProduct', (req, res) => {
     if (err) return res.status(500).send(err);
 
     if (Array.isArray(results)) {
-      const products = results.map(product => ({
+      const products = results.rows.map(product => ({
         ...product,
         prod_image: product.prod_image.toString('base64') // Convert BLOB to base64
       }));
@@ -147,13 +144,13 @@ app.get('/searchProducts', (req, res) => {
   const sql = `
     SELECT id, prod_name, prod_price, prod_image 
     FROM products 
-    WHERE prod_name LIKE ? AND prod_ctgr LIKE ?
+    WHERE prod_name LIKE $1 AND prod_ctgr LIKE $2
   `;
 
   db.query(sql, [`%${name}%`, `%${category}%`], (err, results) => {
     if (err) return res.status(500).send(err);
 
-    const products = results.map(product => ({
+    const products = results.rows.map(product => ({
       ...product,
       prod_image: product.prod_image.toString('base64'), // Convert BLOB to base64
     }));
@@ -169,7 +166,7 @@ app.post('/addToBasket', (req, res) => {
 
   // Check if the product already exists in the user's basket
   db.query(
-    'SELECT * FROM basket WHERE user_id = ? AND product_id = ?',
+    'SELECT * FROM basket WHERE user_id = $1 AND product_id = $2',
     [userId, productId],
     (err, results) => {
       if (err) {
@@ -180,7 +177,7 @@ app.post('/addToBasket', (req, res) => {
       if (results.length > 0) {
         // Update the existing quantity
         db.query(
-          'UPDATE basket SET quantity = quantity + ? WHERE user_id = ? AND product_id = ?',
+          'UPDATE basket SET quantity = quantity + $1 WHERE user_id = $2 AND product_id = $3',
           [quantity, userId, productId],
           (err, result) => {
             if (err) {
@@ -193,7 +190,7 @@ app.post('/addToBasket', (req, res) => {
       } else {
         // Add a new entry to the basket
         db.query(
-          'INSERT INTO basket (user_id, product_id, quantity) VALUES (?, ?, ?)',
+          'INSERT INTO basket (user_id, product_id, quantity) VALUES ($1, $2, $3)',
           [userId, productId, quantity],
           (err, result) => {
             if (err) {
@@ -215,7 +212,7 @@ app.get('/getBasketItems', (req, res) => {
     `SELECT products.id, products.prod_name, products.prod_price, products.prod_image, basket.quantity 
      FROM basket 
      JOIN products ON basket.product_id = products.id 
-     WHERE basket.user_id = ?`,
+     WHERE basket.user_id = $1`,
     [userId],
     (err, results) => {
       if (err) return res.status(500).send(err);
@@ -234,7 +231,7 @@ app.delete('/removeFromBasket', (req, res) => {
   const { userId, productId } = req.query;
 
   console.log('user: ', userId, 'prod: ', productId);
-  db.query('DELETE FROM basket WHERE user_id = ? AND product_id = ?', [userId, productId], (err) => {
+  db.query('DELETE FROM basket WHERE user_id = $1 AND product_id = $2', [userId, productId], (err) => {
     if (err) return res.status(500).send(err);
     res.json({ message: 'Item removed from basket' });
   });
@@ -243,7 +240,7 @@ app.delete('/removeFromBasket', (req, res) => {
 app.get('/GetProductById', (req, res) => {
   const { id } = req.query;
 
-  db.query('SELECT * FROM products WHERE id = ?', [id], (err, results) => {
+  db.query('SELECT * FROM products WHERE id = $1', [id], (err, results) => {
     if (err) return res.status(500).send(err);
     const product = results[0];
     if (product) {
