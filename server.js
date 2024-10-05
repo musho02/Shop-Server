@@ -1,12 +1,5 @@
-const cors = require('cors');
-
-app.use(cors({
-  origin: 'https://shop-react-jbg3.onrender.com', // ระบุโดเมนของ frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
 const express = require('express');
+const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -16,6 +9,12 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+
+app.use(cors({
+  origin: 'https://shop-react-jbg3.onrender.com', // ระบุโดเมนของ frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 const pool = new Pool({
   host: 'dpg-crsmt168ii6s73ef22dg-a.singapore-postgres.render.com',
