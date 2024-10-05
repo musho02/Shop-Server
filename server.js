@@ -16,6 +16,27 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+
+const pool = new Pool({
+  host: 'dpg-crsmt168ii6s73ef22dg-a.singapore-postgres.render.com',
+  user: 'root',
+  password: '15sdaU7JqCQyw5JrkBAwb4QxfVGExwEY',
+  database: 'shop_backend',
+  port: 5432,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+pool.connect()
+  .then(() => {
+    console.log('Connected to PostgreSQL!');
+  })
+  .catch(err => {
+    console.error('Connection error', err.stack);
+  });
+
+
 app.use(express.json());
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -41,24 +62,6 @@ app.use((err, req, res, next) => {
   next();
 });
 
-const pool = new Pool({
-  host: 'dpg-crsmt168ii6s73ef22dg-a.singapore-postgres.render.com',
-  user: 'root',
-  password: '15sdaU7JqCQyw5JrkBAwb4QxfVGExwEY',
-  database: 'shop_backend',
-  port: 5432,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-pool.connect()
-  .then(() => {
-    console.log('Connected to PostgreSQL!');
-  })
-  .catch(err => {
-    console.error('Connection error', err.stack);
-  });
 
 app.post('/register', (req, res) => {
   const { username, password } = req.body;
