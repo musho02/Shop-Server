@@ -27,6 +27,13 @@ const upload = multer({
   }
 });
 
+router.get('/', function (req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); // If needed
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+});
+
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     return res.status(400).json({ message: err.message });
