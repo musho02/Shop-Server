@@ -146,12 +146,11 @@ app.get('/GetProduct', (req, res) => {
         ...product,
         prod_image: product.prod_image.toString('base64') // Convert BLOB to base64
       }));
+      console.log('Fetched products:', products);
+      res.json(products);
     } else {
       console.error('Expected results to be an array, but got:', results);
     }
-
-
-    res.json(products);
   });
 });
 
