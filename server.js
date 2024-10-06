@@ -61,6 +61,16 @@ app.use((err, req, res, next) => {
   next();
 });
 
+app.get('/health', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    res.status(200).send('Database connection is healthy!');
+    client.release();
+  } catch (err) {
+    console.error('Health check failed', err);
+    res.status(500).send('Database connection failed');
+  }
+});
 
 app.post('/register', (req, res) => {
   const { username, password } = req.body;
