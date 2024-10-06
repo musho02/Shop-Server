@@ -85,7 +85,7 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  db.query('SELECT * FROM users WHERE username = $1', [username], (err, results) => {
+  pool.query('SELECT * FROM users WHERE username = $1', [username], (err, results) => {
     if (err) return res.status(500).send(err);
     console.log('Results:', results); // เพิ่ม log เพื่อตรวจสอบผลลัพธ์
 
