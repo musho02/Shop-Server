@@ -83,12 +83,15 @@ app.post('/register', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://shop-react-jbg3.onrender.com');
   const { username, password } = req.body;
 
-  pool.query('SELECT * FROM users WHERE username = $1', [username], (err, results) => {
+  db.query('SELECT * FROM users WHERE username = $1', [username], (err, results) => {
     if (err) return res.status(500).send(err);
-    if (results.length === 0) return res.status(404).json({ message: 'User not found' });
+    console.log('Results:', results); // เพิ่ม log เพื่อตรวจสอบผลลัพธ์
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     const user = results[0];
     const isPasswordValid = bcrypt.compareSync(password, user.password);
@@ -98,6 +101,7 @@ app.post('/login', (req, res) => {
     res.json({ token, role: user.role, name: username, id: user.id });
   });
 });
+
 
 const isAdmin = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
