@@ -93,7 +93,7 @@ app.post('/login', (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const user = results[0];
+    const user = results.rows[0];
     const isPasswordValid = bcrypt.compareSync(password, user.password);
     if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' });
 
