@@ -233,7 +233,9 @@ app.get('/getBasketItems', (req, res) => {
     (err, results) => {
       if (err) return res.status(500).send(err);
 
-      const basketItems = results.map(item => ({
+      console.log('Basket Items:', results.rows);
+
+      const basketItems = results.rows.map(item => ({
         ...item,
         prod_image: item.prod_image.toString('base64')
       }));
