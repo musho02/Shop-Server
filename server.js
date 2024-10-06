@@ -138,7 +138,7 @@ app.post('/products', upload.single('prod_image'), isAdmin, (req, res) => {
 });
 
 app.get('/GetProduct', (req, res) => {
-  pool.query('SELECT id, prod_name, prod_price, prod_image FROM products', (err, results) => {
+  results = pool.query('SELECT id, prod_name, prod_price, prod_image FROM products', (err, results) => {
     if (err) return res.status(500).send(err);
 
     if (Array.isArray(results)) {
