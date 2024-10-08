@@ -93,7 +93,7 @@ app.post('/register', async (req, res) => {
     // เพิ่มผู้ใช้ใหม่ในฐานข้อมูล
     await pool.query(
       'INSERT INTO users (username, password, role) VALUES ($1, $2, $3)',
-      [username, hashedPassword, role || 'user']
+      [username, hashedPassword, 'user']
     );
 
     res.status(201).json({ message: 'User registered successfully' });
