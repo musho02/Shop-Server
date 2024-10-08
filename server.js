@@ -72,14 +72,35 @@ app.get('/health', async (req, res) => {
   }
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  pool.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword], (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.status(201).json({ message: 'User registered' });
-  });
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+
+  try {
+    // ตรวจสอบว่าผู้ใช้มีอยู่แล้วหรือไม่
+    const userExists = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (userExists.rows.length > 0) {
+      return res.status(400).json({ message: 'Username already exists' });
+    }
+
+    // Hash รหัสผ่านด้วย bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // เพิ่มผู้ใช้ใหม่ในฐานข้อมูล
+    await pool.query(
+      'INSERT INTO users (username, password, role) VALUES ($1, $2, $3)',
+      [username, hashedPassword, role || 'user']
+    );
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
 });
 
 app.post('/login', (req, res) => {
